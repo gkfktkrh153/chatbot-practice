@@ -140,7 +140,7 @@ while True:
         print(response)
         conversation_history.append(AIMessage(content=response.content))
 
-    print(conversation_history)
+    #print(conversation_history)
     # AI 응답을 대화 이력에 추가
 
 
