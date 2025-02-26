@@ -52,7 +52,10 @@ service = build('calendar', 'v3', credentials=creds)
 
 @tool
 def add_calendar_event(user_input: str) -> str:
-
+    """
+    사용자의 요청을 분석하여 Google Calendar에 일정을 추가하는 함수.
+    예: "내일 오후 3시에 카페에서 팀 미팅 등록해줘"
+    """
 
     print("user input : " + user_input)
     a = ("현재 시간은 2025-02-26 13:16이야 뒤 ()에 나오는 시간을 YYYY-MM-DDTHH:MM:SS 형식으로 변환해주고 예약 내용은 '|' 뒤에 구분해서 붙여줘 "
