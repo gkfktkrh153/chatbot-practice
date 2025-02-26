@@ -22,6 +22,7 @@ import os
 import openai
 from config import *
 
+load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def textToVoice(text):
