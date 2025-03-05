@@ -89,37 +89,37 @@ conversation_history = [
 # ---------------------------------------------------------------------------------#
 with st.sidebar:
     openai_api_key = os.getenv("OPENAI_API_KEY")
+    
+    st.title("💬 Chatbot")
+    st.caption("🚀 A Streamlit chatbot powered by OpenAI")
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
 
-st.title("💬 Chatbot")
-st.caption("🚀 A Streamlit chatbot powered by OpenAI")
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?"}]
+    for msg in st.session_state.messages:
+        st.chat_message(msg["role"]).write(msg["content"])
 
-for msg in st.session_state.messages:
-    st.chat_message(msg["role"]).write(msg["content"])
-
-if user_input := st.chat_input():
-
-
-    st.chat_message("user").write(user_input)
+    if user_input := st.chat_input():
 
 
+        st.chat_message("user").write(user_input)
 
 
 
-    response = ""
-    if "예약" in user_input or "일정 등록" in user_input:
-        print("🔹 일정 예약 요청 감지 → Agent 실행")
-        response = agent.invoke(user_input)
-        response = response.get('output')
-        conversation_history.append(AIMessage(content=response))
 
 
-    else:
-        print("🔹 일반 질문 처리 → LLM 실행")
-        response = llm.invoke(conversation_history)
-        print(response.content)
-        response = response.content
-        conversation_history.append(AIMessage(content=response))
+        response = ""
+        if "예약" in user_input or "일정 등록" in user_input:
+            print("🔹 일정 예약 요청 감지 → Agent 실행")
+            response = agent.invoke(user_input)
+            response = response.get('output')
+            conversation_history.append(AIMessage(content=response))
 
-    st.chat_message("assistant").write(response)
+
+        else:
+            print("🔹 일반 질문 처리 → LLM 실행")
+            response = llm.invoke(conversation_history)
+            print(response.content)
+            response = response.content
+            conversation_history.append(AIMessage(content=response))
+
+        st.chat_message("assistant").write(response)
