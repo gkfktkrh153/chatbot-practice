@@ -15,10 +15,9 @@ from gtts import  gTTS
 import  playsound
 from pyexpat.errors import messages
 from translate import Translator
-
 from dotenv import load_dotenv
-import os
-
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 import openai
 from config import *
 from langchain.tools import tool
@@ -27,6 +26,20 @@ from langchain.schema import SystemMessage, HumanMessage, AIMessage
 from langchain.agents import initialize_agent
 from langchain.agents import AgentType
 import dateparser
+
+import os
+import sys
+import django
+
+# Django 설정 파일 지정 (프로젝트명.settings 수정)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # 한 단계 위로 이동
+sys.path.append(BASE_DIR)
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "SideProject.settings")
+django.setup()
+
+# 이제 Django 모델 import 가능
+from SideProject.models import Employees
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -59,11 +72,17 @@ def recommendByCustomerData():
         "단, 유의미한 값만 조건으로 사용하고('age'가 0이거나 'name'이 'unknown'이면 조건절에 추가하지 않아도 돼.)"
         "응답은 오직 SQL 쿼리문만 주면 돼"
         "결과는 절대로 sql''' '''와 같은 형식으로 묶지 말고, 순수한 텍스트로만 제공해줘."
-        "예시: select * from employee where name = 'John Doe' and age = 30"
+        "예시: select * from employees where name = 'John Doe' and age = 30"
         + person.getData())
-    result = llm.invoke(question)
 
-    return result.content
+    query = llm.invoke(question).content
+    print("Query : " + query)
+    result =  Employees.objects.raw(query)
+    data = [{"id": emp.id, "name": emp.name, "age": emp.age} for emp in result]
+
+    # JSON 변환
+    json_data = json.dumps(data, ensure_ascii=False, indent=4, cls=DjangoJSONEncoder)
+    return json_data
 
 
 def selectResearchingOption():
@@ -81,10 +100,18 @@ def selectResearchingOption():
 
 def extractIntention(user_input):
     question = (
-        "질문의 의도를 파악해줘"
-        "검색을 원한다면 'research', 검색 조건이 무엇인지 알고 싶다고 하면 'option'을 반환해줘"
-        "질문은 다음과 같아 : " + user_input
+            "다음 질문의 의도를 분석해줘. "
+            "질문의 목적이 검색이라면 'research', 검색 조건을 알고 싶다면 'option'을 반환해. "
+            "그 외의 경우에는 'unknown'을 반환해. "
+            "반환할 때는 반드시 단일 문자열 값만 응답해. "
+            "예시:\n"
+            "- '사용자 정보 기반으로 검색해줘' -> 'research'\n"
+            "- '방금 사용한 검색 조건이 뭔지 알려줘' -> 'option'\n"
+            "- '안녕?' -> 'unknown'\n"
+            "\n"
+            "질문: " + user_input
     )
+
     result = llm.invoke(question)
 
     return result.content
@@ -105,14 +132,14 @@ while True:
 
     print(questionIntention)
     # 맥락상 고객 기반 데이터로 조회해줘라면
-    if questionIntention == "customer":
+    if questionIntention == "research":
         response = recommendByCustomerData()
     # 맥락상 검색 조건 전체를 필요로 한다면
     elif questionIntention == "option":
         response = selectResearchingOption()
 
 
-#    print(response)
+    print(response)
     conversation_history.append(AIMessage(content=response))
 
 
