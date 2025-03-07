@@ -68,7 +68,7 @@ def recommendByCustomerData():
 
 def selectResearchingOption():
     question = (
-        "방금 작성된 SQL 쿼리에서 사용된 파라미터 값을 뽑아줘"
+        "최근 사용된 SQL 쿼리에서 사용된 파라미터 값을 뽑아줘"
         "형식은 예시와 같았으면 좋겠어"
         "결과는 절대로 ''' '''와 같은 형식으로 묶지 말고, 순수한 텍스트로만 제공해줘."
         "예시 :\n name=value \n age=value"
@@ -79,6 +79,15 @@ def selectResearchingOption():
     return result.content
 
 
+def extractIntention(user_input):
+    question = (
+        "질문의 의도를 파악해줘"
+        "검색을 원한다면 'research', 검색 조건이 무엇인지 알고 싶다고 하면 'option'을 반환해줘"
+        "질문은 다음과 같아 : " + user_input
+    )
+    result = llm.invoke(question)
+
+    return result.content
 
 while True:
     user_input = input("사용자: ")
@@ -90,18 +99,23 @@ while True:
     conversation_history.append(HumanMessage(content=user_input))
 
     response = ""
+
+    # 질문 의도 파악
+    questionIntention = extractIntention(user_input)
+
+    print(questionIntention)
     # 맥락상 고객 기반 데이터로 조회해줘라면
-    if user_input == "customer":
+    if questionIntention == "customer":
         response = recommendByCustomerData()
     # 맥락상 검색 조건 전체를 필요로 한다면
-    elif user_input == "option":
+    elif questionIntention == "option":
         response = selectResearchingOption()
 
 
-    print(response)
+#    print(response)
     conversation_history.append(AIMessage(content=response))
 
 
-    print("*********************** 대화내역 *********************** ")
-    for chat in conversation_history:
-        print(chat.content)
+#    print("*********************** 대화내역 *********************** ")
+#    for chat in conversation_history:
+#        print(chat.content)
