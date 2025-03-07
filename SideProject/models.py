@@ -130,3 +130,6 @@ class Employees(models.Model):
     class Meta:
         managed = True
         db_table = 'employees'
+
+    def __str__(self):
+        return f"Employees(id={self.id}, name={self.name}, age={self.age})"

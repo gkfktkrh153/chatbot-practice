@@ -5,7 +5,10 @@ from SideProject.models import Employees
 
 
 def index(request):
-    employees = Employees.objects.all()
+    query = "SELECT * FROM employees"
+    employees =  Employees.objects.raw(query)
+
+
     return HttpResponse(employees)
 
 
