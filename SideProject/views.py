@@ -1,11 +1,12 @@
 from django.http import HttpResponse
 from django.http import JsonResponse
-from .models import Fruits
+
+from SideProject.models import Employees
 
 
 def index(request):
-    fruitsList = Fruits.objects.all()
-    return HttpResponse(fruitsList)
+    employees = Employees.objects.all()
+    return HttpResponse(employees)
 
 
 def get_data(request):
